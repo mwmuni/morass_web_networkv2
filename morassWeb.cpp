@@ -13,12 +13,12 @@ using Node_ns::Edge;
 void MorassWeb::make_random_web() {
     // std::srand(time(NULL));
     unsigned int NUM_NODES = 100;
-    unsigned int NUM_EDGES = 100;
+    unsigned int NUM_EDGES = 10000;
     for (unsigned int i = 0; i < NUM_NODES; i++) {
         nodes.emplace_back(new Node(i, &rand));
     }
     for (unsigned int i = 0; i < NUM_EDGES; i++) {
-        edges.emplace_back(new Edge({0, rand.randDouble(-1., 4.), rand.randDouble(-1., 4.)}));
+        edges.emplace_back(new Edge({0, rand.randDouble(-8., 8.)}));
     }
 
     for (auto e : edges) {
@@ -30,7 +30,7 @@ void MorassWeb::make_random_web() {
     bool edge_added = false;
     Edge* curr_rand_edge = nullptr;
     for (auto n : nodes) {
-        int num_connections = rand.rand() % 4 + 1;
+        int num_connections = rand.rand(8, 20);
         for (int i = 0; i < num_connections; i++) {
             while (!edge_added && attempts < MAX_ATTEMPTS) {
                 while ((curr_rand_edge = edges[rand.rand() % nodes.size()])->id == n->get_id()) {}
@@ -63,7 +63,7 @@ void MorassWeb::make_random_web() {
 
 vector<pair<pair<unsigned int, unsigned int>, double>> MorassWeb::step() {
     double pulsed;
-    double pulse_amount;
+    // double pulse_amount;
     vector<pair<pair<unsigned int, unsigned int>, double>> all_pulses;
 
     for (auto n : nodes) {
@@ -71,11 +71,11 @@ vector<pair<pair<unsigned int, unsigned int>, double>> MorassWeb::step() {
         if (pulsed != 0.0) {
             // TODO: Can keep track of what neurons fired, and to which neurons
             for (auto e : n->get_edges()) {
-                pulse_amount = (pulsed + e->edge_fixed) * e->edge_multiplier;
-                nodes[e->id]->receive(pulse_amount);
+                // pulse_amount = (pulsed + e->edge_fixed); * e->edge_multiplier;
+                nodes[e->id]->receive(e->edge_fixed);
                 all_pulses.emplace_back(pair<pair<unsigned int, unsigned int>, double>(
                                               pair<unsigned int, unsigned int>(n->get_id(), e->id),
-                                                                                pulse_amount));
+                                                                                e->edge_fixed));
             }
         }
     }
@@ -102,6 +102,26 @@ void MorassWeb::decay() {
 void MorassWeb::inject(int id, double amount) {
     nodes[id]->receive(amount);
     nodes[id]->assimilate();
+}
+
+void MorassWeb::modify_node(unsigned int id, double decay_fixed, double decay_multiplier) {
+    for (auto n : nodes) {
+        if (n->get_id() == id)
+            n->set_decay(decay_fixed, decay_multiplier);
+    }
+}
+
+void MorassWeb::init_input_node(unsigned int index) {
+    auto n = nodes[index];
+    unsigned int randidx;
+    while (n->num_outgoing_edges() < 15) {
+        while (edges[(randidx = rand.rand(nodes.size()))]->id == n->get_id()) {}
+        n->add_unique_edge(edges[randidx]);
+    }
+    for (auto e : n->get_edges()) {
+        e->edge_fixed = 10.;
+    }
+    n->set_decay(0., 1.);
 }
 
 MorassWeb::~MorassWeb() {

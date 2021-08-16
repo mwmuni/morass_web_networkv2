@@ -23,6 +23,7 @@ int main() {
 
     // auto start = time.now();
     web->make_random_web();
+    web->init_input_node(0);
     // auto stop = time.now();
 
     // print("Random web creation took " << duration_cast<microseconds>(stop - start).count() << " microseconds");

@@ -4,9 +4,9 @@
 using namespace Node_ns;
 
 double Node::pulse() {
-    if (timeout == 0 && charge >= threshold) {
-        double pulsed_amount = charge;
-        charge = 0.0;
+    if (timeout == 0 && potential >= threshold) {
+        double pulsed_amount = potential;
+        potential = 0.0;
         timeout = TIMEOUT_WAIT;
         return pulsed_amount;
     }
@@ -18,21 +18,21 @@ double Node::pulse() {
 
 void Node::receive(double pulse) {
     if (timeout == 0)
-        temp_charge += pulse;
+        temp_potential += pulse;
 }
 
 void Node::decay() {
-    double result = charge * decay_multiplier - decay_fixed;
+    double result = potential * decay_multiplier - decay_fixed;
     if (result < 0.0) {
-        charge = 0.0;
+        potential = 0.0;
     } else {
-        charge = result;
+        potential = result;
     }
 }
 
 void Node::assimilate() {
-    charge += temp_charge;
-    temp_charge = 0.0;
+    potential += temp_potential;
+    temp_potential = 0.0;
 }
 
 bool Node::has_edge(unsigned int id) {
@@ -60,8 +60,17 @@ bool Node::add_unique_edge(Edge* node) {
     return found_existing;
 }
 
+void Node::set_decay(double fixed, double multiplier) {
+    decay_fixed = fixed;
+    decay_multiplier = multiplier;
+}
+
 vector<Edge*> Node::get_edges() {
     return outgoing;
+}
+
+unsigned int Node::num_outgoing_edges() {
+    return outgoing.size();
 }
 
 unsigned int Node::get_id() {

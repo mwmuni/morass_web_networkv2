@@ -26,5 +26,7 @@ namespace MorassWeb_ns {
         vector<pair<pair<unsigned int, unsigned int>, double>> step();
         void inject(int node_id, double amount);
         void make_random_web();
+        void modify_node(unsigned int id, double decay_fixed, double decay_multiplier);
+        void init_input_node(unsigned int index);
     };
 }
